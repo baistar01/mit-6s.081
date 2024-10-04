@@ -11,10 +11,10 @@ uint64
 sys_exit(void)
 {
   int n;
-  if(argint(0, &n) < 0)
+  if (argint(0, &n) < 0)
     return -1;
   exit(n);
-  return 0;  // not reached
+  return 0; // not reached
 }
 
 uint64
@@ -33,7 +33,7 @@ uint64
 sys_wait(void)
 {
   uint64 p;
-  if(argaddr(0, &p) < 0)
+  if (argaddr(0, &p) < 0)
     return -1;
   return wait(p);
 }
@@ -44,11 +44,11 @@ sys_sbrk(void)
   int addr;
   int n;
 
-  if(argint(0, &n) < 0)
+  if (argint(0, &n) < 0)
     return -1;
-  
+
   addr = myproc()->sz;
-  if(growproc(n) < 0)
+  if (growproc(n) < 0)
     return -1;
   return addr;
 }
@@ -59,13 +59,14 @@ sys_sleep(void)
   int n;
   uint ticks0;
 
-
-  if(argint(0, &n) < 0)
+  if (argint(0, &n) < 0)
     return -1;
   acquire(&tickslock);
   ticks0 = ticks;
-  while(ticks - ticks0 < n){
-    if(myproc()->killed){
+  while (ticks - ticks0 < n)
+  {
+    if (myproc()->killed)
+    {
       release(&tickslock);
       return -1;
     }
@@ -75,12 +76,19 @@ sys_sleep(void)
   return 0;
 }
 
-
 #ifdef LAB_PGTBL
-int
-sys_pgaccess(void)
+int sys_pgaccess(void)
 {
-  // lab pgtbl: your code here.
+  uint64 start_addr; // 测试程序中buf的地址
+  int amount;        // ........32
+  uint64 buffer;     // ........abits的地址
+  if (argaddr(0, &start_addr) < 0 || argint(1, &amount) < 0 ||
+      argaddr(2, &buffer) < 0) // 获取三个参数
+    return -1;
+  struct proc *p = myproc();
+  uint64 mask = access_check(p->pagetable, start_addr); // 页表是当前进程的页表
+  if (copyout(p->pagetable, buffer, (char *)&mask, sizeof(uint64)) < 0)
+    return -1;
   return 0;
 }
 #endif
@@ -90,7 +98,7 @@ sys_kill(void)
 {
   int pid;
 
-  if(argint(0, &pid) < 0)
+  if (argint(0, &pid) < 0)
     return -1;
   return kill(pid);
 }
