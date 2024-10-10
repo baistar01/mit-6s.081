@@ -108,8 +108,8 @@ sys_trace(void)
   return 0;
 }
 
-uint64 get_used_proc(void);
-uint64 get_free_memory(void);
+uint64 get_used_proc(void);   // 收集进程数
+uint64 get_free_memory(void); // 收集可用内存量
 
 uint64 sys_sysinfo()
 {
