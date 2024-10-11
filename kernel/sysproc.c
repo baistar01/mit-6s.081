@@ -91,13 +91,14 @@ int sys_pgaccess(void)
   if (len > 32 || len < 0)
     return -1;
   int res = 0;
-  struct proc *p = myproc();
+  struct proc *p = myproc(); // 获取正在运行进程的指针
   for (int i = 0; i < len; i++)
   {
     int va = addr + i * PGSIZE;
     int abit = vm_pgaccess(p->pagetable, va);
-    res = res | abit << i;
+    res = res | abit << i; // 或运算
   }
+  // copyout将res值复制到用户进程的地址空间
   if (copyout(p->pagetable, bitmask, (char *)&res, sizeof(res)) < 0)
     return -1;
   return 0;

@@ -474,14 +474,15 @@ void vmprint(pagetable_t pagetable, int level)
 uint64 vm_pgaccess(pagetable_t pagetable, uint64 va)
 {
   pte_t *pte = 0;
-  if (va >= MAXVA)
+  if (va >= MAXVA) // MAXVA为最大虚拟地址值
   {
     return 0;
   }
-  pte = walk(pagetable, va, 0);
+  pte = walk(pagetable, va, 0); // 获得va在页表中的页表项的指针。
+  // 如果页表项存在为1，如果不存在为0
   if (pte == 0)
     return 0;
-  if ((*pte & PTE_A) != 0)
+  if ((*pte & PTE_A) != 0) // PTE_A在riscv.h中声明过可以直接使用
   {
     *pte = *pte & (~PTE_A);
     return 1;
