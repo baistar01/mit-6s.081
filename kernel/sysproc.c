@@ -79,15 +79,26 @@ sys_sleep(void)
 #ifdef LAB_PGTBL
 int sys_pgaccess(void)
 {
-  uint64 start_addr; // 测试程序中buf的地址
-  int amount;        // ........32
-  uint64 buffer;     // ........abits的地址
-  if (argaddr(0, &start_addr) < 0 || argint(1, &amount) < 0 ||
-      argaddr(2, &buffer) < 0) // 获取三个参数
+  uint64 addr; // 用户界面的起始虚拟地址
+  int len;     // 需要检查的页表数
+  int bitmask; // 位掩码
+  if (argaddr(0, &addr) < 0)
     return -1;
+  if (argint(1, &len) < 0)
+    return -1;
+  if (argint(2, &bitmask) < 0)
+    return -1;
+  if (len > 32 || len < 0)
+    return -1;
+  int res = 0;
   struct proc *p = myproc();
-  uint64 mask = access_check(p->pagetable, start_addr); // 页表是当前进程的页表
-  if (copyout(p->pagetable, buffer, (char *)&mask, sizeof(uint64)) < 0)
+  for (int i = 0; i < len; i++)
+  {
+    int va = addr + i * PGSIZE;
+    int abit = vm_pgaccess(p->pagetable, va);
+    res = res | abit << i;
+  }
+  if (copyout(p->pagetable, bitmask, (char *)&res, sizeof(res)) < 0)
     return -1;
   return 0;
 }

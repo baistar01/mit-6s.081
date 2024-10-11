@@ -471,28 +471,20 @@ void vmprint(pagetable_t pagetable, int level)
   }
 }
 
-uint64 access_check(pagetable_t pagetable, uint64 va)
+uint64 vm_pgaccess(pagetable_t pagetable, uint64 va)
 {
+  pte_t *pte = 0;
   if (va >= MAXVA)
-    panic("walk");
-  uint64 mask = 0;
-  // 实验中给到最大的页面是32页
-  for (int pages = 0; pages < 32; pages++, va += PGSIZE)
   {
-    pte_t *pte = 0;
-    pagetable_t p = pagetable;
-    // 仿照walk函数写的，获取L0级的PTE
-    for (int level = 2; level >= 0; level--)
-    {
-      pte = &p[PX(level, va)];
-      if (*pte & PTE_V)
-        p = (pagetable_t)PTE2PA(*pte);
-    }
-    if (*pte & PTE_V && *pte & PTE_A)
-    {
-      mask |= (1L << pages);
-      *pte &= ~(PTE_A);
-    }
+    return 0;
   }
-  return mask;
+  pte = walk(pagetable, va, 0);
+  if (pte == 0)
+    return 0;
+  if ((*pte & PTE_A) != 0)
+  {
+    *pte = *pte & (~PTE_A);
+    return 1;
+  }
+  return 0;
 }

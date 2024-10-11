@@ -134,6 +134,7 @@ found:
     return 0;
   }
 
+  // Allocate a usyscall page.
   if (0 == (p->ucall = (struct usyscall *)kalloc()))
   {
     freeproc(p);
@@ -217,11 +218,15 @@ proc_pagetable(struct proc *p)
     return 0;
   }
 
+  // map the usyscall just below TRAPFRAME
   if (mappages(pagetable, USYSCALL, PGSIZE, (uint64)(p->ucall),
                PTE_U | PTE_R) < 0)
   {
-    uvmunmap(pagetable, USYSCALL, 1, 0);
+    // if语句失败，解除之前所有的映射。
+    // uvmunmap的作用是解除虚拟地址空间与物理地址空间的映射。
     uvmunmap(pagetable, TRAMPOLINE, 1, 0);
+    uvmunmap(pagetable, TRAMPOLINE, 1, 0);
+    // uvmfree的作用是释放进程的用户地址空间。
     uvmfree(pagetable, 0);
     return 0;
   }
