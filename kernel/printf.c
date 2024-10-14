@@ -125,6 +125,7 @@ void panic(char *s)
   printf(s);
   printf("\n");
   panicked = 1; // freeze uart output from other CPUs
+  backtrace();
   for (;;)
     ;
 }
@@ -137,13 +138,13 @@ void printfinit(void)
 
 void backtrace(void)
 {
-  uint64 fp = r_fp();
-  uint64 stack_top = PGROUNDUP(fp);
-  uint64 stack_down = PGROUNDDOWN(fp);
+  uint64 fp = r_fp();                  // 获取当前的栈帧指针
+  uint64 stack_top = PGROUNDUP(fp);    // 栈的上边界
+  uint64 stack_down = PGROUNDDOWN(fp); // 栈的下边界
   while (fp < stack_top && fp > stack_down)
   {
-    printf("%p\n", *(uint64 *)(fp - 8));
-    fp = *(uint64 *)(fp - 16);
+    printf("%p\n", *(uint64 *)(fp - 8)); // 打印当前栈帧的返回地址
+    fp = *(uint64 *)(fp - 16);           // 更新上一个栈帧（栈是从上向下的）
   }
   return;
 }
