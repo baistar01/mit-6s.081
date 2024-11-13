@@ -135,7 +135,7 @@ found:
   }
 
   // Allocate a usyscall page.
-  if (0 == (p->ucall = (struct usyscall *)kalloc()))
+  if ((p->ucall = (struct usyscall *)kalloc()) == 0)
   {
     freeproc(p);
     release(&p->lock);
@@ -224,7 +224,6 @@ proc_pagetable(struct proc *p)
   {
     // if语句失败，解除之前所有的映射。
     // uvmunmap的作用是解除虚拟地址空间与物理地址空间的映射。
-    uvmunmap(pagetable, TRAMPOLINE, 1, 0);
     uvmunmap(pagetable, TRAMPOLINE, 1, 0);
     // uvmfree的作用是释放进程的用户地址空间。
     uvmfree(pagetable, 0);
