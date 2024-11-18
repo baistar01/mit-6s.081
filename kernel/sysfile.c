@@ -308,7 +308,7 @@ sys_open(void)
 
   begin_op();
 
-  if (omode & O_CREATE)
+  if (omode & O_CREATE) // 创建新文件标志
   {
     ip = create(path, T_FILE, 0, 0);
     if (ip == 0)
@@ -317,7 +317,7 @@ sys_open(void)
       return -1;
     }
   }
-  else
+  else // 查找已有文件
   {
     if ((ip = namei(path)) == 0)
     {
@@ -558,25 +558,25 @@ uint64
 sys_symlink(void)
 {
   char target[MAXPATH], path[MAXPATH];
-  struct inode *ip_path;
+  struct inode *ip_path; // 指向新创建的符号链接文件的inode
 
   if (argstr(0, target, MAXPATH) < 0 || argstr(1, path, MAXPATH) < 0)
   {
     return -1;
   }
 
-  begin_op();
-  // 分配一个inode结点，create返回锁定的inode
-  ip_path = create(path, T_SYMLINK, 0, 0);
+  begin_op(); // 启动一个文件系统操作事务
+
+  ip_path = create(path, T_SYMLINK, 0, 0); // 创建一个新的inode，用于存储符号链接文件。
   if (ip_path == 0)
   {
     end_op();
     return -1;
   }
-  // 向inode数据块中写入target路径
-  if (writei(ip_path, 0, (uint64)target, 0, MAXPATH) < MAXPATH)
+
+  if (writei(ip_path, 0, (uint64)target, 0, MAXPATH) < MAXPATH) // 将目标路径target写入符号链接文件的inode数据块
   {
-    iunlockput(ip_path);
+    iunlockput(ip_path); // 解锁并释放符号链接文件的inode
     end_op();
     return -1;
   }
